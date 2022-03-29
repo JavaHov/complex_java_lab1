@@ -2,6 +2,8 @@ package se.iths.entity;
 
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class Student {
@@ -10,13 +12,14 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(nullable = false)
+    @NotEmpty
     private String firstName;
 
-    @Column(nullable = false)
+    @NotEmpty
     private String lastName;
 
-    @Column(unique = true, nullable = false)
+    @NotEmpty
+    @Column(unique = true)
     private String email;
 
     @Column(nullable = true)
