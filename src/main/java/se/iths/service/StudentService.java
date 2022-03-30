@@ -1,6 +1,7 @@
 package se.iths.service;
 
 
+import se.iths.customexceptions.StudentNotFoundException;
 import se.iths.entity.Student;
 
 import javax.persistence.EntityManager;
@@ -33,9 +34,12 @@ public class StudentService {
         entityManager.remove(entityManager.find(Student.class, id));
     }
 
-    public Student update(Long id, Student student) {
+    public Student update(Long id, Student student) throws StudentNotFoundException {
 
         Student foundStudent = entityManager.find(Student.class, id);
+        if(foundStudent == null) {
+            throw  new StudentNotFoundException("Could not find student with id " + id);
+        }
 
         if(student.getEmail() != null) {
             foundStudent.setEmail(student.getEmail());

@@ -1,6 +1,7 @@
 package se.iths.rest;
 
 
+import se.iths.customexceptions.StudentNotFoundException;
 import se.iths.entity.Student;
 import se.iths.service.StudentService;
 
@@ -21,22 +22,31 @@ public class StudentRest {
 
     @Path("")
     @GET
-    public Response getAllStudents() {
+    public Response getAllStudents() throws StudentNotFoundException {
         List<Student> students = studentService.getAllStudents();
+        if(students.isEmpty()) {
+            throw new StudentNotFoundException("No students in database.");
+        }
         return Response.ok(students).build();
     }
 
     @Path("{id}")
     @GET
-    public Response getStudentById(@PathParam("id") Long id) {
+    public Response getStudentById(@PathParam("id") Long id) throws StudentNotFoundException {
         Student student = studentService.findStudentById(id);
+        if(student == null) {
+            throw new StudentNotFoundException("No student with id " + id + " in database.");
+        }
         return Response.ok(student).build();
     }
 
     @Path("query")
     @GET
-    public Response getStudentsByLastName(@QueryParam("lastname") String lastname) {
+    public Response getStudentsByLastName(@QueryParam("lastname") String lastname) throws StudentNotFoundException {
         List<Student> students = studentService.getStudentsByLastName(lastname);
+        if(students.isEmpty()) {
+            throw new StudentNotFoundException("Found no students with lastname " + lastname + " in database.");
+        }
         return Response.ok(students).build();
     }
 
@@ -49,14 +59,18 @@ public class StudentRest {
 
     @Path("{id}")
     @DELETE
-    public Response deleteStudent(@PathParam("id") Long id) {
-        studentService.deleteStudent(id);
-        return Response.ok("Student with id " + id + " was deleted.").build(); //Vet inte om det funkar...
+    public Response deleteStudent(@PathParam("id") Long id) throws StudentNotFoundException {
+        try {
+            studentService.deleteStudent(id);
+            return Response.ok("Student with id " + id + " deleted.", MediaType.TEXT_PLAIN_TYPE).build();
+        } catch(Exception e) {
+            throw new StudentNotFoundException("Student was not found");
+        }
     }
 
     @Path("{id}")
     @PATCH
-    public Response update(@PathParam("id") Long id, Student student) {
+    public Response update(@PathParam("id") Long id, Student student) throws StudentNotFoundException {
         Student updatedStudent = studentService.update(id, student);
         return Response.ok(updatedStudent).build();
     }
