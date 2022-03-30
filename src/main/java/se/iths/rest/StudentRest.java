@@ -1,11 +1,13 @@
 package se.iths.rest;
 
 
+import se.iths.customexceptions.EntityNotFoundException;
 import se.iths.customexceptions.StudentNotFoundException;
 import se.iths.entity.Student;
 import se.iths.service.StudentService;
 
 import javax.inject.Inject;
+import javax.swing.text.html.parser.Entity;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -22,10 +24,10 @@ public class StudentRest {
 
     @Path("")
     @GET
-    public Response getAllStudents() throws StudentNotFoundException {
+    public Response getAllStudents() {
         List<Student> students = studentService.getAllStudents();
         if(students.isEmpty()) {
-            throw new StudentNotFoundException("No students in database.");
+            throw new EntityNotFoundException("No students in database.");
         }
         return Response.ok(students).build();
     }
@@ -42,10 +44,10 @@ public class StudentRest {
 
     @Path("query")
     @GET
-    public Response getStudentsByLastName(@QueryParam("lastname") String lastname) throws StudentNotFoundException {
+    public Response getStudentsByLastName(@QueryParam("lastname") String lastname) {
         List<Student> students = studentService.getStudentsByLastName(lastname);
         if(students.isEmpty()) {
-            throw new StudentNotFoundException("Found no students with lastname " + lastname + " in database.");
+            return Response.ok("No students in database").build();
         }
         return Response.ok(students).build();
     }
@@ -59,12 +61,12 @@ public class StudentRest {
 
     @Path("{id}")
     @DELETE
-    public Response deleteStudent(@PathParam("id") Long id) throws StudentNotFoundException {
+    public Response deleteStudent(@PathParam("id") Long id) {
         try {
             studentService.deleteStudent(id);
             return Response.ok("Student with id " + id + " deleted.", MediaType.TEXT_PLAIN_TYPE).build();
         } catch(Exception e) {
-            throw new StudentNotFoundException("Student was not found");
+            throw new EntityNotFoundException("Student with id " + id + " was not found");
         }
     }
 
@@ -72,14 +74,17 @@ public class StudentRest {
     @PATCH
     public Response update(@PathParam("id") Long id, Student student) throws StudentNotFoundException {
         Student updatedStudent = studentService.update(id, student);
+        if(updatedStudent == null) {
+            throw new EntityNotFoundException("Student not found");
+        }
         return Response.ok(updatedStudent).build();
     }
 
-    @Path("")
+    @Path("{id}")
     @PUT
-    public Response replaceStudentInfo(Student student) {
-        Student replacedStudent = studentService.replaceStudentInfo(student);
-        return Response.ok(replacedStudent).build();
+    public Response replaceStudentInfo(@PathParam("id") Long id, Student student) throws StudentNotFoundException {
+            Student replacedStudent = studentService.replaceStudentInfo(id, student);
+            return Response.ok(replacedStudent).build();
     }
 
 }

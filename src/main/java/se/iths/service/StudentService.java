@@ -57,8 +57,12 @@ public class StudentService {
         return foundStudent;
     }
 
-    public Student replaceStudentInfo(Student student) {
-        return entityManager.merge(student);        // Kan man returnera 'public abstract <T>...'?
+    public Student replaceStudentInfo(Long id, Student student) throws StudentNotFoundException {
+            Student foundStudent = entityManager.find(Student.class, id);
+            if(foundStudent == null) {
+                throw new StudentNotFoundException("Student not found");
+            }
+            return entityManager.merge(student);
     }
 
     public void createStudent(Student student) {
