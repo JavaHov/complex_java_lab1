@@ -1,6 +1,7 @@
 package se.iths.service;
 
 
+import se.iths.customexceptions.EntityNotFoundException;
 import se.iths.customexceptions.StudentNotFoundException;
 import se.iths.entity.Student;
 
@@ -34,11 +35,11 @@ public class StudentService {
         entityManager.remove(entityManager.find(Student.class, id));
     }
 
-    public Student update(Long id, Student student) throws StudentNotFoundException {
+    public Student update(Long id, Student student) throws EntityNotFoundException {
 
         Student foundStudent = entityManager.find(Student.class, id);
         if(foundStudent == null) {
-            throw  new StudentNotFoundException("Could not find student with id " + id);
+            throw  new EntityNotFoundException("Could not find student with id " + id);
         }
 
         if(student.getEmail() != null) {
@@ -65,7 +66,17 @@ public class StudentService {
             return entityManager.merge(student);
     }
 
-    public void createStudent(Student student) {
-        entityManager.persist(student);
+    public void createStudent(Student student) throws Exception {
+        try {
+            entityManager.persist(student);
+        } catch(Exception e) {
+            throw new Exception("Could not create student.");
+        }
+    }
+
+    public List<Student> getStudentsByFirstName(String firstname) {
+        return entityManager.createQuery("select s from Student s where s.firstName like :studentFirstName", Student.class)
+                .setParameter("studentFirstName", firstname)
+                .getResultList();
     }
 }
