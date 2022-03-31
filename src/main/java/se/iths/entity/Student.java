@@ -3,7 +3,6 @@ package se.iths.entity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 @Entity
 public class Student {
@@ -22,7 +21,7 @@ public class Student {
     @Column(unique = true)
     private String email;
 
-    @Column(nullable = true)
+    @Column
     private String phoneNumber;
 
     public Student(String firstName, String lastName, String email, String phoneNumber) {
