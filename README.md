@@ -8,7 +8,10 @@ Get all students: [GET] localhost:8080/student-management-system/api/v1/students
 Get student by id: [GET] localhost:8080/student-management-system/api/v1/students/{id}
 
 Get students by lastname: [GET] localhost:8080/student-management-system/api/v1/students/querylast
-QUERY lastname <the_name>
+QUERY lastname: <the_name>
+
+Get students by firstname: [GET] localhost:8080/student-management-system/api/v1/students/queryfirst
+QUERY firstname: <the_name>
 
 Create student: [POST] localhost:8080/student-management-system/api/v1/students
 Json example:
