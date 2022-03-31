@@ -31,6 +31,12 @@ public class StudentService {
                 .getResultList();
     }
 
+    public List<Student> getStudentsByFirstName(String firstname) {
+        return entityManager.createQuery("select s from Student s where s.firstName like :studentFirstName", Student.class)
+                .setParameter("studentFirstName", firstname)
+                .getResultList();
+    }
+
     public void deleteStudent(Long id) {
         entityManager.remove(entityManager.find(Student.class, id));
     }
@@ -72,11 +78,5 @@ public class StudentService {
         } catch(Exception e) {
             throw new Exception("Could not create student.");
         }
-    }
-
-    public List<Student> getStudentsByFirstName(String firstname) {
-        return entityManager.createQuery("select s from Student s where s.firstName like :studentFirstName", Student.class)
-                .setParameter("studentFirstName", firstname)
-                .getResultList();
     }
 }

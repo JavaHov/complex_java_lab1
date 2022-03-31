@@ -12,6 +12,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+
 
 @Path("students")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -26,7 +28,7 @@ public class StudentRest {
     public Response getAllStudents() {
         List<Student> students = studentService.getAllStudents();
         if(students.isEmpty()) {
-            throw new EntityNotFoundException("No students in database.");
+            return Response.ok("The table is empty.", MediaType.TEXT_PLAIN_TYPE).build();
         }
         return Response.ok(students).build();
     }
@@ -46,7 +48,10 @@ public class StudentRest {
     public Response getStudentsByLastName(@QueryParam("lastname") String lastname) {
         List<Student> students = studentService.getStudentsByLastName(lastname);
         if(students.isEmpty()) {
-            return Response.ok("No students in database with lastname: " + lastname, MediaType.TEXT_PLAIN_TYPE).build();
+            throw new WebApplicationException(Response.status(NOT_FOUND)
+                    .type(MediaType.TEXT_PLAIN_TYPE)
+                    .entity("No students in table with lastname: " + lastname)
+                    .build());
         }
         return Response.ok(students).build();
     }
@@ -56,7 +61,10 @@ public class StudentRest {
     public Response getStudentByFirstName(@QueryParam("firstname") String firstname) {
         List<Student> students = studentService.getStudentsByFirstName(firstname);
         if(students.isEmpty()) {
-            return Response.ok("No students in database with firstname: " + firstname, MediaType.TEXT_PLAIN_TYPE).build();
+            throw new WebApplicationException(Response.status(NOT_FOUND)
+                    .type(MediaType.TEXT_PLAIN_TYPE)
+                    .entity("No student in table with firstname: " + firstname)
+                    .build());
         }
         return Response.ok(students).build();
     }
@@ -79,7 +87,7 @@ public class StudentRest {
             studentService.deleteStudent(id);
             return Response.ok("Student with id " + id + " deleted.", MediaType.TEXT_PLAIN_TYPE).build();
         } catch(Exception e) {
-            throw new EntityNotFoundException("Coult not delete. Student with id " + id + " was not found");
+            throw new EntityNotFoundException("Could not delete. Student with id " + id + " was not found");
         }
     }
 
@@ -98,7 +106,7 @@ public class StudentRest {
     public Response replaceStudentInfo(@PathParam("id") Long id, Student student) throws StudentNotFoundException {
             Student replacedStudent = studentService.replaceStudentInfo(id, student);
             if(replacedStudent == null) {
-                throw new StudentNotFoundException("Det gick inte att uppdatera student med id " + id);
+                throw new StudentNotFoundException("Could not update student with id " + id);
             }
             return Response.ok(replacedStudent).build();
     }
