@@ -69,16 +69,18 @@ public class StudentRest {
         return Response.ok(students).build();
     }
 
+
     @Path("")
     @POST
-    public Response createStudent(Student student) throws Exception {
-        try {
-            studentService.createStudent(student);
-            return Response.ok(student).build();
-        } catch(Exception e) {
-            throw new Exception(e.getMessage());
+    public Response createStudent(Student student) {
+        if(checkEmptyFields(student)) {
+            throw new WebApplicationException(Response.status(Response.Status.CONFLICT)
+                    .entity("Firstname, Lastname or Email can not be empty.").type(MediaType.TEXT_PLAIN_TYPE).build());
         }
+        studentService.createStudent(student);
+        return Response.ok(student).build();
     }
+
 
     @Path("{id}")
     @DELETE
@@ -109,6 +111,10 @@ public class StudentRest {
                 throw new StudentNotFoundException("Could not update student with id " + id);
             }
             return Response.ok(replacedStudent).build();
+    }
+
+    private static boolean checkEmptyFields(Student student) {
+        return student.getFirstName().isBlank() || student.getLastName().isBlank() || student.getEmail().isBlank();
     }
 
 }

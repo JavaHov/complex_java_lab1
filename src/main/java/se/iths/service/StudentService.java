@@ -72,11 +72,7 @@ public class StudentService {
             return entityManager.merge(student);
     }
 
-    public void createStudent(Student student) throws Exception {
-        try {
+    public void createStudent(Student student) {
             entityManager.persist(student);
-        } catch(Exception e) {
-            throw new Exception("Could not create student.");
-        }
     }
 }
