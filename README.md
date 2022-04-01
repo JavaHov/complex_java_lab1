@@ -29,7 +29,7 @@ Json example:
 }
 (Rest of data will be intact)
 
-Replace student info: [PUT] localhost:8080/student-management-system/api/v1/students
+Replace student info: [PUT] localhost:8080/student-management-system/api/v1/students/{id}
 Json example:
 {
 "id": "1",
