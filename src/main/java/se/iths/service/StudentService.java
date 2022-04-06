@@ -14,7 +14,7 @@ import java.util.List;
 public class StudentService {
 
     @PersistenceContext
-    EntityManager entityManager;
+    private EntityManager entityManager;
 
     public List<Student> getAllStudents() {
         return entityManager.createQuery("select s from Student s", Student.class).getResultList();

@@ -3,6 +3,8 @@ package se.iths.entity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Student {
@@ -32,6 +34,17 @@ public class Student {
     }
 
     public Student() {
+    }
+
+    @OneToMany(cascade = CascadeType.PERSIST, orphanRemoval = true)
+    private List<Subject> subjects = new ArrayList<>();
+
+    public boolean addSubject(Subject subject) {
+        return subjects.add(subject);
+    }
+
+    public boolean removeSubject(Subject subject) {
+        return subjects.remove(subject);
     }
 
     public Long getId() {
@@ -72,5 +85,13 @@ public class Student {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public List<Subject> getSubjects() {
+        return subjects;
+    }
+
+    public void setSubjects(List<Subject> subjects) {
+        this.subjects = subjects;
     }
 }
