@@ -1,8 +1,10 @@
 package se.iths.entity;
 
 
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,13 +13,18 @@ public class Teacher {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+//    @Column(name="TEACHER_ID")
     private Long id;
-
-    @NotEmpty
+    @Size(min = 2)
     private String firstName;
-
-    @NotEmpty
+    @Size(min = 2)
     private String lastName;
+
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Subject> subjects = new ArrayList<>();
 
     public Teacher(String firstName, String lastName) {
         this.firstName = firstName;
@@ -25,17 +32,15 @@ public class Teacher {
     }
 
     public Teacher() {
+
     }
 
-    @OneToMany(cascade = CascadeType.PERSIST, orphanRemoval = true)
-    private List<Subject> subjects = new ArrayList<>();
-
-    public boolean addSubject(Subject subject) {
-        return subjects.add(subject);
+    public Long getId() {
+        return id;
     }
 
-    public boolean removeSubject(Subject subject) {
-        return subjects.remove(subject);
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFirstName() {
@@ -53,12 +58,13 @@ public class Teacher {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
-
+    @JsonbTransient
     public List<Subject> getSubjects() {
         return subjects;
     }
 
-    public void setSubjects(List<Subject> subjects) {
-        this.subjects = subjects;
+    public void addSubject(Subject subject) {
+        subjects.add(subject);
+        subject.setTeacher(this);
     }
 }

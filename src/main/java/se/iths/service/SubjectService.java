@@ -1,7 +1,9 @@
 package se.iths.service;
 
 
+import se.iths.customexceptions.NotFoundException;
 import se.iths.entity.Subject;
+import se.iths.entity.Teacher;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -24,7 +26,7 @@ public class SubjectService {
     }
 
     public Subject findSubjectByName(String name) {
-        return entityManager.createQuery("select s from Subject s where s.name like :subjectName", Subject.class)
+        return entityManager.createQuery("select s from Subject s where s.title like :subjectName", Subject.class)
                 .setParameter("subjectName", name)
                 .getSingleResult();
     }
@@ -40,10 +42,21 @@ public class SubjectService {
 
     public Subject updateSubject(Long id, Subject subject) {
         Subject foundSubject = entityManager.find(Subject.class, id);
+        if(foundSubject == null) {
+            throw new NotFoundException("Could not find subject with id " + id);
+        }
 
-        if(subject.getName() != null) {
-            foundSubject.setName(subject.getName());
+        if(subject.getTitle() != null) {
+            foundSubject.setTitle(subject.getTitle());
         }
         return foundSubject;
+    }
+
+    public Subject addTeacherToSubject(Long subjectId, Long teacherId) {
+        Subject subject = entityManager.find(Subject.class, subjectId);
+        Teacher teacher = entityManager.find(Teacher.class, teacherId);
+        subject.setTeacher(teacher);
+        entityManager.persist(subject);
+        return subject;
     }
 }

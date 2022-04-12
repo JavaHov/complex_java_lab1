@@ -1,30 +1,35 @@
 package se.iths.entity;
 
 
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 public class Student {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
-    @NotEmpty
+    @Size(min = 2)
     private String firstName;
-
     @NotEmpty
+    @Size(min = 2)
     private String lastName;
-
     @NotEmpty
     @Column(unique = true)
     private String email;
-
-    @Column
     private String phoneNumber;
+
+
+    @ManyToMany(mappedBy = "students")
+    Set<Subject> subjects = new HashSet<>();
 
     public Student(String firstName, String lastName, String email, String phoneNumber) {
         this.firstName = firstName;
@@ -36,15 +41,19 @@ public class Student {
     public Student() {
     }
 
-    @OneToMany(cascade = CascadeType.PERSIST, orphanRemoval = true)
-    private List<Subject> subjects = new ArrayList<>();
-
-    public boolean addSubject(Subject subject) {
-        return subjects.add(subject);
+    @JsonbTransient
+    public Set<Subject> getSubjects() {
+        return subjects;
     }
 
-    public boolean removeSubject(Subject subject) {
-        return subjects.remove(subject);
+    public void addSubject(Subject subject) {
+        subjects.add(subject);
+        subject.addStudent(this);
+    }
+
+    public void removeSubject(Subject subject) {
+        subjects.remove(subject);
+        subject.removeStudent(this);
     }
 
     public Long getId() {
@@ -85,13 +94,5 @@ public class Student {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-    }
-
-    public List<Subject> getSubjects() {
-        return subjects;
-    }
-
-    public void setSubjects(List<Subject> subjects) {
-        this.subjects = subjects;
     }
 }

@@ -2,12 +2,16 @@ package se.iths.service;
 
 
 import se.iths.customexceptions.EntityNotFoundException;
+import se.iths.customexceptions.NotAuthorizedException;
+import se.iths.customexceptions.NotFoundException;
 import se.iths.customexceptions.StudentNotFoundException;
 import se.iths.entity.Student;
+import se.iths.entity.Subject;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import javax.ws.rs.WebApplicationException;
 import java.util.List;
 
 @Transactional
@@ -38,14 +42,19 @@ public class StudentService {
     }
 
     public void deleteStudent(Long id) {
-        entityManager.remove(entityManager.find(Student.class, id));
+
+        Student student = entityManager.find(Student.class, id);
+        if(student == null) {
+            throw new NotFoundException("Could not find student with id " + id);
+        }
+        entityManager.remove(student);
     }
 
     public Student update(Long id, Student student) throws EntityNotFoundException {
 
         Student foundStudent = entityManager.find(Student.class, id);
         if(foundStudent == null) {
-            throw  new EntityNotFoundException("Could not find student with id " + id);
+            throw  new NotFoundException("Could not find student with id " + id);
         }
 
         if(student.getEmail() != null) {
@@ -64,15 +73,30 @@ public class StudentService {
         return foundStudent;
     }
 
-    public Student replaceStudentInfo(Long id, Student student) throws StudentNotFoundException {
+    public Student replaceStudentInfo(Long id, Student student) {
             Student foundStudent = entityManager.find(Student.class, id);
             if(foundStudent == null) {
-                throw new StudentNotFoundException("Student not found");
+                throw new NotFoundException("Student not found");
             }
             return entityManager.merge(student);
     }
 
     public void createStudent(Student student) {
             entityManager.persist(student);
+    }
+
+    public Student addSubjectToStudent(Long studentId, Long subjectId) {
+
+        Student student = entityManager.find(Student.class, studentId);
+        if(student == null) {
+            throw new NotFoundException("Could not find student with id " + studentId);
+        }
+        Subject subject = entityManager.find(Subject.class, subjectId);
+        if(subject == null) {
+            throw new NotFoundException("Could not find subject with id " + subjectId);
+        }
+        student.addSubject(subject);
+        entityManager.merge(student);
+        return entityManager.find(Student.class, student.getId());
     }
 }

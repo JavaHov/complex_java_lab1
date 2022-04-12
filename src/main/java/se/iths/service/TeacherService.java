@@ -1,12 +1,16 @@
 package se.iths.service;
 
 
+import se.iths.customexceptions.EntityNotFoundException;
 import se.iths.entity.Subject;
 import se.iths.entity.Teacher;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Transactional
@@ -40,12 +44,22 @@ public class TeacherService {
     }
 
     public void deleteTeacher(Long id) {
-        Teacher t = entityManager.find(Teacher.class, id);
-        entityManager.remove(t);
+        try {
+            Teacher t = entityManager.find(Teacher.class, id);
+            entityManager.remove(t);
+        } catch(Exception e) {
+            throw new WebApplicationException(Response.status(Response.Status.CONFLICT)
+                    .entity("Could not delete.")
+                    .type(MediaType.APPLICATION_JSON_TYPE)
+                    .build());
+        }
     }
 
     public Teacher updateTeacher(Long id, Teacher teacher) {
         Teacher foundTeacher = entityManager.find(Teacher.class, id);
+        if(foundTeacher == null) {
+            throw new EntityNotFoundException("Could not find teacher with id " + id);
+        }
 
         if(teacher.getFirstName() != null) {
             foundTeacher.setFirstName(teacher.getFirstName());

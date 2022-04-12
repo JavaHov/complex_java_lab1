@@ -1,8 +1,10 @@
 package se.iths.rest;
 
 
-import se.iths.customexceptions.EntityNotFoundException;
-import se.iths.customexceptions.StudentNotFoundException;
+
+import se.iths.customexceptions.NoValidFieldsException;
+import se.iths.customexceptions.NotFoundException;
+
 import se.iths.entity.Student;
 import se.iths.service.StudentService;
 
@@ -11,8 +13,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
-
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 
 @Path("students")
@@ -28,17 +28,17 @@ public class StudentRest {
     public Response getAllStudents() {
         List<Student> students = studentService.getAllStudents();
         if(students.isEmpty()) {
-            return Response.ok("The table is empty.", MediaType.TEXT_PLAIN_TYPE).build();
+            throw new NotFoundException("No students i table.");
         }
         return Response.ok(students).build();
     }
 
     @Path("{id}")
     @GET
-    public Response getStudentById(@PathParam("id") Long id) throws EntityNotFoundException {
+    public Response getStudentById(@PathParam("id") Long id) {
         Student student = studentService.findStudentById(id);
         if(student == null) {
-            throw new EntityNotFoundException("No student with id " + id + " in database.");
+            throw new NotFoundException("No student with id " + id + " in database.");
         }
         return Response.ok(student).build();
     }
@@ -47,11 +47,8 @@ public class StudentRest {
     @GET
     public Response getStudentsByLastName(@QueryParam("lastname") String lastname) {
         List<Student> students = studentService.getStudentsByLastName(lastname);
-        if(students.isEmpty()) {
-            throw new WebApplicationException(Response.status(NOT_FOUND)
-                    .type(MediaType.TEXT_PLAIN_TYPE)
-                    .entity("No students in table with lastname: " + lastname)
-                    .build());
+        if (students.isEmpty()) {
+            throw new NotFoundException("No students with first name: " + lastname);
         }
         return Response.ok(students).build();
     }
@@ -60,11 +57,8 @@ public class StudentRest {
     @GET
     public Response getStudentByFirstName(@QueryParam("firstname") String firstname) {
         List<Student> students = studentService.getStudentsByFirstName(firstname);
-        if(students.isEmpty()) {
-            throw new WebApplicationException(Response.status(NOT_FOUND)
-                    .type(MediaType.TEXT_PLAIN_TYPE)
-                    .entity("No student in table with firstname: " + firstname)
-                    .build());
+        if (students.isEmpty()) {
+            throw new NotFoundException("No students with first name: " + firstname);
         }
         return Response.ok(students).build();
     }
@@ -74,8 +68,7 @@ public class StudentRest {
     @POST
     public Response createStudent(Student student) {
         if(checkEmptyFields(student)) {
-            throw new WebApplicationException(Response.status(Response.Status.CONFLICT)
-                    .entity("Firstname, Lastname or Email can not be empty.").type(MediaType.TEXT_PLAIN_TYPE).build());
+            throw new NoValidFieldsException("Some fields are empty");
         }
         studentService.createStudent(student);
         return Response.ok(student).build();
@@ -89,32 +82,42 @@ public class StudentRest {
             studentService.deleteStudent(id);
             return Response.ok("Student with id " + id + " deleted.", MediaType.TEXT_PLAIN_TYPE).build();
         } catch(Exception e) {
-            throw new EntityNotFoundException("Could not delete. Student with id " + id + " was not found");
+            throw new NotFoundException("Could not find student with id " + id);
         }
     }
 
     @Path("{id}")
     @PATCH
-    public Response update(@PathParam("id") Long id, Student student) throws EntityNotFoundException {
+    public Response update(@PathParam("id") Long id, Student student) {
         Student updatedStudent = studentService.update(id, student);
         if(updatedStudent == null) {
-            throw new EntityNotFoundException("Student not found");
+            throw new NotFoundException("Student not found");
         }
         return Response.ok(updatedStudent).build();
     }
 
     @Path("{id}")
     @PUT
-    public Response replaceStudentInfo(@PathParam("id") Long id, Student student) throws StudentNotFoundException {
+    public Response replaceStudentInfo(@PathParam("id") Long id, Student student) {
             Student replacedStudent = studentService.replaceStudentInfo(id, student);
             if(replacedStudent == null) {
-                throw new StudentNotFoundException("Could not update student with id " + id);
+                throw new NotFoundException("Could not update student with id " + id);
             }
             return Response.ok(replacedStudent).build();
+    }
+
+    @Path("{studentId}/subject/{subjectId}")
+    @PATCH
+    public Response addSubjectToStudent(@PathParam("studentId")Long studentId, @PathParam("subjectId")Long subjectId) {
+        Student student = studentService.addSubjectToStudent(studentId, subjectId);
+        return Response.ok(student).build();
     }
 
     private static boolean checkEmptyFields(Student student) {
         return student.getFirstName().isBlank() || student.getLastName().isBlank() || student.getEmail().isBlank();
     }
+
+
+
 
 }
