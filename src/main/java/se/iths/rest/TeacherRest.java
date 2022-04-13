@@ -1,7 +1,9 @@
 package se.iths.rest;
 
 
+import se.iths.customexceptions.ConflictException;
 import se.iths.customexceptions.EntityNotFoundException;
+import se.iths.customexceptions.NotFoundException;
 import se.iths.entity.Teacher;
 import se.iths.service.TeacherService;
 
@@ -24,7 +26,7 @@ public class TeacherRest {
     public Response getAllTeachers() {
         List<Teacher> teacherList = teacherService.getAllTeachers();
         if(teacherList.isEmpty()) {
-            return Response.ok("The table is empty.", MediaType.TEXT_PLAIN_TYPE).build();
+            throw new NotFoundException("The table is empty.");
         }
         return Response.ok(teacherList).build();
     }
@@ -34,8 +36,7 @@ public class TeacherRest {
     public Response getTeacherById(@PathParam("id") Long id) {
         Teacher foundTeacher = teacherService.findTeacherById(id);
         if(foundTeacher == null) {
-            throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
-                    .entity("No teacher with id " + id).type(MediaType.TEXT_PLAIN_TYPE).build());
+            throw new NotFoundException("Could not find teacher with id " + id);
         }
         return Response.ok(foundTeacher).build();
     }
@@ -45,10 +46,7 @@ public class TeacherRest {
     public Response findTeacherByFirstName(@QueryParam("firstname") String firstname) {
         List<Teacher> teacherList = teacherService.findTeachersByFirstName(firstname);
         if(teacherList.isEmpty()) {
-            throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
-                    .type(MediaType.APPLICATION_JSON_TYPE)
-                    .entity("No teacher with firstname " + firstname + " found.")
-                    .build());
+            throw new NotFoundException("Could not find teacher with first name: " + firstname);
         }
         return Response.ok(teacherList).build();
     }
@@ -58,10 +56,7 @@ public class TeacherRest {
     public Response findTeacherByLastName(@QueryParam("lastname") String lastname) {
         List<Teacher> teacherList = teacherService.findTeachersByLastName(lastname);
         if(teacherList.isEmpty()) {
-            throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
-                    .type(MediaType.TEXT_PLAIN_TYPE)
-                    .entity("No teacher with lastname " + lastname + " found.")
-                    .build());
+            throw new NotFoundException("Found no teacher with last name: " + lastname);
         }
         return Response.ok(teacherList).build();
     }
@@ -70,13 +65,10 @@ public class TeacherRest {
     @POST
     public Response createTeacher(Teacher teacher) {
         if(checkEmptyFields(teacher)) {
-            throw new WebApplicationException(Response.status(Response.Status.CONFLICT)
-                    .entity("Firstname or lastname can not be empty.")
-                    .type(MediaType.TEXT_PLAIN_TYPE)
-                    .build());
+            throw new ConflictException("Fields can not be empty.");
         }
         teacherService.createTeacher(teacher);
-        return Response.ok(teacher, MediaType.APPLICATION_JSON_TYPE).build();
+        return Response.ok(teacher).build();
     }
 
     @Path("{id}")
@@ -84,10 +76,7 @@ public class TeacherRest {
     public Response updateTeacher(@PathParam("id") Long id, Teacher teacher) {
         Teacher updatedTeacher = teacherService.updateTeacher(id, teacher);
         if(updatedTeacher == null) {
-            throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
-                    .entity("Could not find teacher with id " + id)
-                    .type(MediaType.TEXT_PLAIN_TYPE)
-                    .build());
+            throw new ConflictException("Could not update teacher for some reason...");
         }
         return Response.ok(updatedTeacher, MediaType.APPLICATION_JSON_TYPE).build();
     }
@@ -97,11 +86,13 @@ public class TeacherRest {
     public Response deleteTeacher(@PathParam("id") Long id) {
         try {
             teacherService.deleteTeacher(id);
-            return Response.ok("Teacher with id " + id + " deleted.", MediaType.APPLICATION_JSON_TYPE).build();
+            return Response.ok("Teacher with id " + id + " deleted.").build();
         } catch(Exception e) {
-            throw new EntityNotFoundException("Could not delete. Teacher with id " + id + " was not found");
+            throw new NotFoundException("Could not delete. Teacher with id " + id + " was not found");
         }
     }
+
+
 
 
     private boolean checkEmptyFields(Teacher teacher) {

@@ -48,7 +48,7 @@ public class StudentRest {
     public Response getStudentsByLastName(@QueryParam("lastname") String lastname) {
         List<Student> students = studentService.getStudentsByLastName(lastname);
         if (students.isEmpty()) {
-            throw new NotFoundException("No students with first name: " + lastname);
+            throw new NotFoundException("No students with last name: " + lastname);
         }
         return Response.ok(students).build();
     }
@@ -68,7 +68,7 @@ public class StudentRest {
     @POST
     public Response createStudent(Student student) {
         if(checkEmptyFields(student)) {
-            throw new NoValidFieldsException("Some fields are empty");
+            throw new NoValidFieldsException("Fields can not be empty.");
         }
         studentService.createStudent(student);
         return Response.ok(student).build();

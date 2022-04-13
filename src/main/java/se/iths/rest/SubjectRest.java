@@ -2,7 +2,6 @@ package se.iths.rest;
 
 
 import se.iths.customexceptions.ConflictException;
-import se.iths.customexceptions.EntityNotFoundException;
 import se.iths.customexceptions.NotFoundException;
 import se.iths.entity.Student;
 import se.iths.entity.Subject;
@@ -37,10 +36,7 @@ public class SubjectRest {
     public Response findSubjectById(@PathParam("id") Long id) {
         Subject subject = subjectService.findSubjectById(id);
         if(subject == null) {
-            throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
-                    .entity("Could not find subject with id " + id)
-                    .type(MediaType.TEXT_PLAIN_TYPE)
-                    .build());
+            throw new NotFoundException("Could not find subject with id " + id);
         }
         return Response.ok(subject).build();
     }
@@ -87,6 +83,13 @@ public class SubjectRest {
     @POST
     public Response addTeacherToSubject(@PathParam("subjectId") Long subjectId, @PathParam("teacherId") Long teacherId) {
         Subject subject = subjectService.addTeacherToSubject(subjectId, teacherId);
+        return Response.ok(subject).build();
+    }
+
+    @Path("{subjectId}/student/{studentId}")
+    @POST
+    public Response addStudentToSubject(@PathParam("subjectId") Long subjectId, @PathParam("studentId") Long studentId) {
+        Subject subject = subjectService.addStudentToSubject(subjectId, studentId);
         return Response.ok(subject).build();
     }
 

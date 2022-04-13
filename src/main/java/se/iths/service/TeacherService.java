@@ -2,6 +2,7 @@ package se.iths.service;
 
 
 import se.iths.customexceptions.EntityNotFoundException;
+import se.iths.customexceptions.NotFoundException;
 import se.iths.entity.Subject;
 import se.iths.entity.Teacher;
 
@@ -45,20 +46,21 @@ public class TeacherService {
 
     public void deleteTeacher(Long id) {
         try {
-            Teacher t = entityManager.find(Teacher.class, id);
-            entityManager.remove(t);
+            Teacher teacher = entityManager.find(Teacher.class, id);
+            for(Subject subject : teacher.getSubjects()) {
+                teacher.removeSubject(subject);
+            }
+            entityManager.remove(teacher);
+
         } catch(Exception e) {
-            throw new WebApplicationException(Response.status(Response.Status.CONFLICT)
-                    .entity("Could not delete.")
-                    .type(MediaType.APPLICATION_JSON_TYPE)
-                    .build());
+            throw new NotFoundException("Could not find teacher with id " + id);
         }
     }
 
     public Teacher updateTeacher(Long id, Teacher teacher) {
         Teacher foundTeacher = entityManager.find(Teacher.class, id);
         if(foundTeacher == null) {
-            throw new EntityNotFoundException("Could not find teacher with id " + id);
+            throw new NotFoundException("Could not find teacher with id " + id);
         }
 
         if(teacher.getFirstName() != null) {

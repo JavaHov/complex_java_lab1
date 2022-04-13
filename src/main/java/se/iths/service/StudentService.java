@@ -47,6 +47,10 @@ public class StudentService {
         if(student == null) {
             throw new NotFoundException("Could not find student with id " + id);
         }
+
+        for(Subject subject : student.getSubjects()) {
+            subject.removeStudent(student);
+        }
         entityManager.remove(student);
     }
 
@@ -97,6 +101,6 @@ public class StudentService {
         }
         student.addSubject(subject);
         entityManager.merge(student);
-        return entityManager.find(Student.class, student.getId());
+        return student;
     }
 }

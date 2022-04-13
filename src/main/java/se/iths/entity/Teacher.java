@@ -67,4 +67,8 @@ public class Teacher {
         subjects.add(subject);
         subject.setTeacher(this);
     }
+
+    public void removeSubject(Subject subject) {
+        subjects.remove(subject);
+    }
 }
