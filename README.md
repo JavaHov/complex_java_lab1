@@ -1,5 +1,5 @@
 # complex_java_lab1
-Här kommer jag lägga till instruktioner om endpoints och annat...
+
 
 ENDPOINTS:
 
